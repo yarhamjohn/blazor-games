@@ -2,14 +2,21 @@
 
 <h1>Minesweeper</h1>
 
-<button class="btn btn-secondary" @onclick="StartSmallGame">Small</button>
-<button class="btn btn-secondary" @onclick="StartMediumGame">Medium</button>
-<button class="btn btn-secondary" @onclick="StartLargeGame">Large</button>
+<div style="padding-bottom: 1rem">
+    <button class="btn btn-secondary" @onclick="StartSmallGame">Small</button>
+    <button class="btn btn-secondary" @onclick="StartMediumGame">Medium</button>
+    <button class="btn btn-secondary" @onclick="StartLargeGame">Large</button>
+</div>
 
 @if (GameStarted) {
-    @foreach (var tile in _board.Tiles)
+    @for (var row = 0; row < _board.Tiles.GetLength(0); row++)
     {
-        <div>@tile.IsMine</div>
+        <div class="btn-group">
+            @for (var col = 0; col < _board.Tiles.GetLength(1); col++)
+            {
+                <button class="btn btn-default btn" @onclick="_board.Tiles[row, col].Click">@(_board.Tiles[row, col].IsMine ? "T" : "F")</button>
+            }
+        </div>
     }
 }
 

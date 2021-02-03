@@ -1,3 +1,5 @@
+using System;
+
 public class MinesweeperTile
     {
         public bool IsMine { get; set; }
@@ -13,5 +15,6 @@ public class MinesweeperTile
         public void Click()
         {
             IsClicked = true;
+            Console.WriteLine("clicked");
         }
     }
