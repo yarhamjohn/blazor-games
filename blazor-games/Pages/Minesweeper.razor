@@ -1,0 +1,41 @@
+﻿@page "/minesweeper"
+
+<h1>Minesweeper</h1>
+
+<button class="btn btn-secondary" @onclick="StartSmallGame">Small</button>
+<button class="btn btn-secondary" @onclick="StartMediumGame">Medium</button>
+<button class="btn btn-secondary" @onclick="StartLargeGame">Large</button>
+
+@if (GameStarted) {
+    @foreach (var tile in _board.Tiles)
+    {
+        <div>@tile.IsMine</div>
+    }
+}
+
+@code {
+    private MinesweeperBoard _board { get; set; }
+    private bool GameStarted { get; set; }
+
+    private void StartSmallGame()
+    {
+        StartGame(10, 10, 10);
+    }
+
+    private void StartMediumGame()
+    {
+        StartGame(16, 16, 40);
+    }
+
+    private void StartLargeGame()
+    {
+        StartGame(16, 30, 99);
+    }
+
+    private void StartGame(int numRows, int numCols, int numMines)
+    {
+        _board = new MinesweeperBoard(numRows, numCols);
+        _board.AddMines(numMines);
+        GameStarted = true;
+    }
+}
