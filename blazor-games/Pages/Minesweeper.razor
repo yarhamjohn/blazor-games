@@ -21,16 +21,16 @@
                     {
                         @if (tile.IsMine)
                         {
-                            <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: red; font-size: 15px; display: flex; justify-content: center; align-items: center;">*</button>
+                            <button class="btn btn-default tile tile-clicked tile-clicked-mine">*</button>
                         }
                         else
                         {
-                            <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: blue; font-size: 15px; display: flex; justify-content: center; align-items: center;">@(tile.NumNeighbours == 0 ? "" : tile.NumNeighbours)</button>
+                            <button class="btn btn-default tile tile-clicked tile-clicked-empty">@(tile.NumNeighbours == 0 ? "" : tile.NumNeighbours)</button>
                         }
                     }
                     else
                     {
-                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px outset;" @onclick="() => ClickTile(tile)"></button>
+                        <button class="btn btn-default tile tile-unclicked" @onclick="() => ClickTile(tile)"></button>
                     }
                 }
             </div>

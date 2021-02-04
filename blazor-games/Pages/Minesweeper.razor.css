@@ -1,0 +1,28 @@
+﻿.tile {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+}
+
+.tile:focus { outline: none; box-shadow: none; }
+
+.tile-unclicked {
+    border: 3px outset;
+}
+
+.tile-clicked {
+    border: 3px inset;
+    font-size: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+}
+
+.tile-clicked-empty {
+    color: blue;
+}
+
+.tile-clicked-mine {
+    color: red;
+}
