@@ -1,11 +1,12 @@
 using System;
+using System.Runtime.InteropServices;
 
 public class Tile
     {
         public bool IsMine { get; set; }
         public bool IsClicked { get; set; }
         public int NumNeighbours { get; set; }
-        // TODO: Handle right-click flagging
+        public bool IsFlagged { get; set; }
         
         public int Row { get; set; }
         public int Col { get; set; }
@@ -22,5 +23,16 @@ public class Tile
         public void Click()
         {
             IsClicked = true;
+            IsFlagged = false;
+        }
+
+        public void Flag()
+        {
+            IsFlagged = true;
+        }
+
+        public void UnFlag()
+        {
+            IsFlagged = false;
         }
     }
