@@ -43,10 +43,16 @@
 
     @if (_status == Status.Lost)
     {
-        <h1>You lost :(</h1>
+        <div style="padding-bottom: 1rem">
+            <h1>You lost :(</h1>
+            <button class="btn btn-primary" @onclick="ClearBoard">Clear</button>
+        </div>
     } else if (_status == Status.Won)
     {
-        <h1>You Won!</h1>
+        <div style="padding-bottom: 1rem">
+            <h1>You Won!</h1>
+            <button class="btn btn-primary" @onclick="ClearBoard">Clear</button>
+        </div>
     }
 }
 
@@ -59,6 +65,11 @@
     {
         _board = Board.Build(size);
         _status = Status.Started;
+    }
+
+    private void ClearBoard()
+    {
+        _status = Status.NotStarted;
     }
 
     private void ClickTile(Tile tile)
