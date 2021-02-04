@@ -1,20 +1,21 @@
 using System;
 
-public class MinesweeperTile
+public class Tile
     {
         public bool IsMine { get; set; }
-        private bool IsClicked { get; set; }
+        public bool IsClicked { get; set; }
+        public int NumNeighbours { get; set; }
         // TODO: Handle right-click flagging
 
-        public MinesweeperTile()
+        public Tile()
         {
             IsMine = false;
             IsClicked = false;
+            NumNeighbours = 0;
         }
 
         public void Click()
         {
             IsClicked = true;
-            Console.WriteLine("clicked");
         }
     }

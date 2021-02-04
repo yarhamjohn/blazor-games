@@ -1,48 +1,42 @@
 ﻿@page "/minesweeper"
+@using blazor_games.Minesweeper
 
 <h1>Minesweeper</h1>
 
 <div style="padding-bottom: 1rem">
-    <button class="btn btn-secondary" @onclick="StartSmallGame">Small</button>
-    <button class="btn btn-secondary" @onclick="StartMediumGame">Medium</button>
-    <button class="btn btn-secondary" @onclick="StartLargeGame">Large</button>
+    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Small)">Small</button>
+    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Medium)">Medium</button>
+    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Large)">Large</button>
 </div>
 
 @if (GameStarted) {
-    @for (var row = 0; row < _board.Tiles.GetLength(0); row++)
-    {
-        <div class="btn-group">
-            @for (var col = 0; col < _board.Tiles.GetLength(1); col++)
-            {
-                <button class="btn btn-default btn" @onclick="_board.Tiles[row, col].Click">@(_board.Tiles[row, col].IsMine ? "T" : "F")</button>
-            }
-        </div>
-    }
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        @for (var row = 0; row < _board.Tiles.GetLength(0); row++)
+        {
+            <div class="btn-group">
+                @for (var col = 0; col < _board.Tiles.GetLength(1); col++)
+                {
+                    @if (_board.Tiles[row, col].IsClicked)
+                    {
+                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: blue; font-size: 15px; display: flex; justify-content: center; align-items: center;">@(_board.Tiles[row, col].IsMine ? "*" : _board.Tiles[row, col].NumNeighbours == 0 ? "" : _board.Tiles[row, col].NumNeighbours)</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px outset;" @onclick="_board.Tiles[row, col].Click"></button>
+                    }
+                }
+            </div>
+        }
+    </div>
 }
 
 @code {
-    private MinesweeperBoard _board { get; set; }
+    private Board _board { get; set; }
     private bool GameStarted { get; set; }
 
-    private void StartSmallGame()
+    private void StartGame(Size size)
     {
-        StartGame(10, 10, 10);
-    }
-
-    private void StartMediumGame()
-    {
-        StartGame(16, 16, 40);
-    }
-
-    private void StartLargeGame()
-    {
-        StartGame(16, 30, 99);
-    }
-
-    private void StartGame(int numRows, int numCols, int numMines)
-    {
-        _board = new MinesweeperBoard(numRows, numCols);
-        _board.AddMines(numMines);
+        _board = Board.Build(size);
         GameStarted = true;
     }
 }
