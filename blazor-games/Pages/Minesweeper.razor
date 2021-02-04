@@ -9,34 +9,66 @@
     <button class="btn btn-secondary" @onclick="() => StartGame(Size.Large)">Large</button>
 </div>
 
-@if (GameStarted) {
+@if (_status != Status.NotStarted) {
     <div style="display: flex; flex-direction: column; align-items: flex-start;">
         @for (var row = 0; row < _board.Tiles.GetLength(0); row++)
         {
             <div class="btn-group">
                 @for (var col = 0; col < _board.Tiles.GetLength(1); col++)
                 {
-                    @if (_board.Tiles[row, col].IsClicked)
+                    var tile = _board.Tiles[row, col];
+                    @if (tile.IsClicked)
                     {
-                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: blue; font-size: 15px; display: flex; justify-content: center; align-items: center;">@(_board.Tiles[row, col].IsMine ? "*" : _board.Tiles[row, col].NumNeighbours == 0 ? "" : _board.Tiles[row, col].NumNeighbours)</button>
+                        @if (tile.IsMine)
+                        {
+                            <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: red; font-size: 15px; display: flex; justify-content: center; align-items: center;">*</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px inset; color: blue; font-size: 15px; display: flex; justify-content: center; align-items: center;">@(tile.NumNeighbours == 0 ? "" : tile.NumNeighbours)</button>
+                        }
                     }
                     else
                     {
-                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px outset;" @onclick="_board.Tiles[row, col].Click"></button>
+                        <button class="btn btn-default btn" style="width: 20px; height: 20px; padding: 0; border: 3px outset;" @onclick="() => ClickTile(tile)"></button>
                     }
                 }
             </div>
         }
     </div>
+
+    @if (_status == Status.Lost)
+    {
+        <h1>You lost :(</h1>
+    } else if (_status == Status.Won)
+    {
+        <h1>You Won!</h1>
+    }
 }
+
 
 @code {
     private Board _board { get; set; }
-    private bool GameStarted { get; set; }
+    private Status _status { get; set; } = Status.NotStarted;
 
     private void StartGame(Size size)
     {
         _board = Board.Build(size);
-        GameStarted = true;
+        _status = Status.Started;
+    }
+
+    private void ClickTile(Tile tile)
+    {
+        tile.Click();
+        if (tile.IsMine)
+        {
+            _status = Status.Lost;
+            _board.ClickAllTiles();
+        }
+        else if (_board.OnlyMinesRemaining())
+        {
+            _status = Status.Won;
+            _board.ClickAllTiles();
+        }
     }
 }

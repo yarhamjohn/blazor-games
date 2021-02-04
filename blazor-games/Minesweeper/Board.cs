@@ -90,4 +90,35 @@ public class Board
             Tiles[targetRow, targetCol].IsMine = true;
         }
     }
+
+    public bool OnlyMinesRemaining()
+    {
+        for (var row = 0; row < NumRows; row++)
+        {
+            for (var col = 0; col < NumCols; col++)
+            {
+                if (!Tiles[row, col].IsMine && !Tiles[row, col].IsClicked)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void ClickAllTiles()
+    {
+        for (var row = 0; row < NumRows; row++)
+        {
+            for (var col = 0; col < NumCols; col++)
+            {
+                if (!Tiles[row, col].IsClicked)
+                {
+                    Tiles[row, col].Click();
+                }
+            }
+        }
+
+    }
 }
