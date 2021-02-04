@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using blazor_games.Minesweeper;
 
 public class Board
@@ -74,7 +78,7 @@ public class Board
         {
             for (var col = 0; col < NumCols; col++)
             {
-                Tiles[row, col] = new Tile();
+                Tiles[row, col] = new Tile(row, col);
             }
         }
     }
@@ -120,5 +124,43 @@ public class Board
             }
         }
 
+    }
+
+    public void RevealAdjacentTiles(Tile tile)
+    {
+        if (tile.IsMine)
+        {
+            // This shouldn't happen as all neighbours of this tile would have have a count > 0 and already be revealed.
+            return;
+        }
+
+        if (tile.NumNeighbours > 0)
+        {
+            // Reveal this tile but none of its neighbours as it represents a boundary
+            tile.Click();
+            return;
+        }
+
+        tile.Click();
+        var neighbouringTiles = GetNeighbouringTiles(tile).Where(t => !t.IsClicked);
+        foreach (var neighbour in neighbouringTiles)
+        {
+            RevealAdjacentTiles(neighbour);
+        }
+    }
+
+    private IEnumerable<Tile> GetNeighbouringTiles(Tile tile)
+    {
+        for (var r = tile.Row - 1; r <= tile.Row + 1; r++)
+        {
+            for (var c = tile.Col - 1; c <= tile.Col + 1; c++)
+            {
+                var isCurrentTile = r == tile.Row && c == tile.Col;
+                if (IsOnBoard(r, c) && !isCurrentTile)
+                {
+                    yield return Tiles[r, c];
+                }
+            }
+        }
     }
 }

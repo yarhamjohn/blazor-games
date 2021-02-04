@@ -64,11 +64,18 @@
         {
             _status = Status.Lost;
             _board.ClickAllTiles();
+            return;
         }
-        else if (_board.OnlyMinesRemaining())
+        
+        if (tile.NumNeighbours == 0)
+        {
+            _board.RevealAdjacentTiles(tile);
+        }
+        
+        if (_board.OnlyMinesRemaining())
         {
             _status = Status.Won;
             _board.ClickAllTiles();
-        }
+        } 
     }
 }
