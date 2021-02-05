@@ -1,107 +1,68 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using blazor_games.Minesweeper;
 
 public class Board
 {
-    private int NumRows { get; set; }
-    private int NumCols { get; set; }
-    public Tile[,] Tiles { get; set; }
+    private int NumRows { get; }
+    private int NumCols { get; }
+    public Tile[,] Tiles { get; }
 
-    private Board(int numRows, int numCols, int numMines)
+    public Board(Tile[,] tiles)
     {
-        NumRows = numRows;
-        NumCols = numCols;
-        Tiles = new Tile[numRows, numCols];
-
-        AddTiles();
-        AddMines(numMines);
-        AddNeighbourCount();
+        Tiles = tiles;
+        NumRows = tiles.GetLength(0);
+        NumCols = tiles.GetLength(1);
     }
 
-    private void AddNeighbourCount()
-    {
-        for (var row = 0; row < Tiles.GetLength(0); row++)
-        {
-            for (var col = 0; col < Tiles.GetLength(1); col++)
-            {
-                Tiles[row, col].NumNeighbours = GetMineCount(row, col);
-            }
-        }
-    }
-    
-    private int GetMineCount(int row, int col)
-    {
-        var count = 0;
-
-        for (var r = row - 1; r <= row + 1; r++)
-        {
-            for (var c = col - 1; c <= col + 1; c++)
-            {
-                if (IsMine( r, c))
-                {
-                    count++;
-                }
-            }
-        }
-
-        return count;
-    }
-
-    private bool IsMine(int row, int col)
-    {
-        return IsOnBoard(row, col) && Tiles[row, col].IsMine;
-    }
-
-    private bool IsOnBoard(int row, int col)
-    {
-        return row >= 0 && col >= 0 && row < NumRows && col < NumCols;
-    }
-    
-    public static Board Build(Size size)
-    {
-        return size switch
-        {
-            Size.Small => new Board(10, 10, 10),
-            Size.Medium => new Board(16, 16, 40),
-            Size.Large => new Board(16, 30, 99),
-            _ => throw new ArgumentOutOfRangeException(nameof(size), size, "Invalid board size")
-        };
-    }
-
-    private void AddTiles()
+    public void RevealAllTiles()
     {
         for (var row = 0; row < NumRows; row++)
         {
             for (var col = 0; col < NumCols; col++)
             {
-                Tiles[row, col] = new Tile(row, col);
+                Tiles[row, col].Reveal();
             }
         }
     }
-
-    private void AddMines(int numMines)
+    
+    public void ClickTile(Tile tile)
     {
-        for (var i = 0; i < numMines; i++)
-        {
-            var rand = new Random();
-            var targetRow = (int) (rand.NextDouble() * NumRows);
-            var targetCol = (int) (rand.NextDouble() * NumCols);
+        tile.Click();
 
-            Tiles[targetRow, targetCol].IsMine = true;
+        if (tile.IsMine())
+        {
+            // We don't want to reveal any neighbours if the target is a mine
+            return;
+        }
+        
+        if (tile.GetStatus() != TileStatus.Revealed)
+        {
+            // We don't want to reveal any neighbours as we simply un-flagged the target tile
+            return;
+        }
+
+        if (CountNeighbouringMines(tile) == 0)
+        {
+            RevealAdjacentTiles(tile);
         }
     }
-
-    public bool OnlyMinesRemaining()
+    
+    public int CountNeighbouringMines(Tile tile)
+    {
+        var (row, col) = GetTilePosition(tile);
+        return CountNeighbouringMines(row, col);
+    }
+    
+    public bool IsCleared()
     {
         for (var row = 0; row < NumRows; row++)
         {
             for (var col = 0; col < NumCols; col++)
             {
-                if (!Tiles[row, col].IsMine && !Tiles[row, col].IsClicked)
+                var isMine = Tiles[row, col].IsMine();
+                var isNotClicked = Tiles[row, col].GetStatus() != TileStatus.Revealed;
+                if (!isMine && isNotClicked)
                 {
                     return false;
                 }
@@ -110,52 +71,76 @@ public class Board
 
         return true;
     }
-
-    public void ClickAllTiles()
+    
+    private int CountNeighbouringMines(int row, int col)
     {
-        for (var row = 0; row < NumRows; row++)
+        var count = 0;
+        for (var r = row - 1; r <= row + 1; r++)
         {
-            for (var col = 0; col < NumCols; col++)
+            for (var c = col - 1; c <= col + 1; c++)
             {
-                if (!Tiles[row, col].IsClicked)
+                var isTargetTile = row == r && col == c;
+                if (IsOnBoard(r, c) && Tiles[r, c].IsMine() && !isTargetTile)
                 {
-                    Tiles[row, col].Click();
+                    count++;
                 }
             }
         }
 
+        return count;
     }
-
-    public void RevealAdjacentTiles(Tile tile)
+    
+    private void RevealAdjacentTiles(Tile tile)
     {
-        if (tile.IsMine)
+        var (row, col) = GetTilePosition(tile);
+        if (tile.IsMine())
         {
-            // This shouldn't happen as all neighbours of this tile would have have a count > 0 and already be revealed.
+            // Don't reveal the tile if its a mine
             return;
         }
 
-        if (tile.NumNeighbours > 0)
+        tile.Reveal();
+        if (CountNeighbouringMines(row, col) > 0)
         {
-            // Reveal this tile but none of its neighbours as it represents a boundary
-            tile.Click();
+            // Don't reveal any neighbouring tiles as its a boundary
             return;
         }
 
-        tile.Click();
-        var neighbouringTiles = GetNeighbouringTiles(tile).Where(t => !t.IsClicked);
-        foreach (var neighbour in neighbouringTiles)
+        var unrevealedNeighbours = GetNeighbouringTiles(row, col).Where(t => t.GetStatus() != TileStatus.Revealed);
+        foreach (var neighbour in unrevealedNeighbours)
         {
             RevealAdjacentTiles(neighbour);
         }
     }
-
-    private IEnumerable<Tile> GetNeighbouringTiles(Tile tile)
+    
+    private bool IsOnBoard(int row, int col)
     {
-        for (var r = tile.Row - 1; r <= tile.Row + 1; r++)
+        return row >= 0 && col >= 0 && row < NumRows && col < NumCols;
+    }
+
+    private (int row, int col) GetTilePosition(Tile tile)
+    {
+        for (var r = 0; r < NumRows; r++)
         {
-            for (var c = tile.Col - 1; c <= tile.Col + 1; c++)
+            for (var c = 0; c < NumCols; c++)
             {
-                var isCurrentTile = r == tile.Row && c == tile.Col;
+                if (Tiles[r, c].Equals(tile))
+                {
+                    return (r, c);
+                }
+            }
+        }
+
+        throw new InvalidOperationException("The specified tile was not found on the board.");
+    }
+    
+    private IEnumerable<Tile> GetNeighbouringTiles(int row, int col)
+    {
+        for (var r = row - 1; r <= row + 1; r++)
+        {
+            for (var c = col - 1; c <= col + 1; c++)
+            {
+                var isCurrentTile = r == row && c == col;
                 if (IsOnBoard(r, c) && !isCurrentTile)
                 {
                     yield return Tiles[r, c];

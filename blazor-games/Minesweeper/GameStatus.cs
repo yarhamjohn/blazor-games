@@ -1,6 +1,6 @@
 ﻿namespace blazor_games.Minesweeper
 {
-    public enum Status
+    public enum GameStatus
     {
         NotStarted,
         Started,

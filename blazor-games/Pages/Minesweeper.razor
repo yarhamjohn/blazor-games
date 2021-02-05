@@ -4,117 +4,95 @@
 <h1>Minesweeper</h1>
 
 <div style="padding-bottom: 1rem">
-    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Small)">Small</button>
-    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Medium)">Medium</button>
-    <button class="btn btn-secondary" @onclick="() => StartGame(Size.Large)">Large</button>
+    <button class="btn btn-secondary" @onclick="() => Start(BoardSize.Small)">Small</button>
+    <button class="btn btn-secondary" @onclick="() => Start(BoardSize.Medium)">Medium</button>
+    <button class="btn btn-secondary" @onclick="() => Start(BoardSize.Large)">Large</button>
 </div>
 
-@if (_status != Status.NotStarted) {
+@if (GetStatus() != GameStatus.NotStarted)
+{
     <div style="display: flex; flex-direction: column; align-items: flex-start;">
-        @for (var row = 0; row < _board.Tiles.GetLength(0); row++)
-        {
-            <div class="btn-group">
-                @for (var col = 0; col < _board.Tiles.GetLength(1); col++)
-                {
-                    var tile = _board.Tiles[row, col];
-                    @if (tile.IsClicked)
+        @{
+            var tiles = Board.Tiles;
+            @for (var row = 0; row < tiles.GetLength(0); row++)
+            {
+                <div class="btn-group">
+                    @for (var col = 0; col < tiles.GetLength(1); col++)
                     {
-                        @if (tile.IsMine)
+                        var tile = tiles[row, col];
+                        @if (tile.GetStatus() == TileStatus.Revealed)
                         {
-                            <button class="btn btn-default tile tile-clicked tile-clicked-mine">*</button>
+                            @if (tile.IsMine())
+                            {
+                                <button class="btn btn-default tile tile-clicked tile-clicked-mine">*</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-default tile tile-clicked tile-clicked-empty">@ParseNumMines(tile)</button>
+                            }
+                        }
+                        else if (tile.GetStatus() == TileStatus.Flagged)
+                        {
+                            <button class="btn btn-default tile tile-flagged" oncontextmenu="return false;" @onclick="() => HandleLeftClick(tile)" @onmouseup="@(e => HandleRightClick(e, tile))">&#x2690;</button>
                         }
                         else
                         {
-                            <button class="btn btn-default tile tile-clicked tile-clicked-empty">@(tile.NumNeighbours == 0 ? "" : tile.NumNeighbours)</button>
+                            <button class="btn btn-default tile tile-unclicked" oncontextmenu="return false;" @onclick="() => HandleLeftClick(tile)" @onmouseup="@(e => HandleRightClick(e, tile))"></button>
                         }
                     }
-                    else if (tile.IsFlagged)
-                    {
-                        <button class="btn btn-default tile tile-flagged" oncontextmenu="return false;" @onclick="() => ClickTile(tile)" @onmouseup="@(e => ToggleFlag(e, tile))">&#x2690;</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-default tile tile-unclicked" oncontextmenu="return false;" @onclick="() => ClickTile(tile)" @onmouseup="@(e => ToggleFlag(e, tile))" />
-                    }
-                }
-            </div>
+                </div>
+            }
         }
     </div>
 
-    @if (_status == Status.Lost)
+    @if (GetStatus() == GameStatus.Lost)
     {
         <div style="padding-bottom: 1rem">
             <h1>You lost :(</h1>
-            <button class="btn btn-primary" @onclick="ClearBoard">Clear</button>
         </div>
-    } else if (_status == Status.Won)
+    }
+    else if (GetStatus() == GameStatus.Won)
     {
         <div style="padding-bottom: 1rem">
             <h1>You Won!</h1>
-            <button class="btn btn-primary" @onclick="ClearBoard">Clear</button>
         </div>
     }
 }
 
 
 @code {
-    private Board _board { get; set; }
-    private Status _status { get; set; } = Status.NotStarted;
+    private Game Game { get; set; }
+    private Board Board { get; set; }
 
-    private void StartGame(Size size)
+    private void Start(BoardSize boardSize)
     {
-        _board = Board.Build(size);
-        _status = Status.Started;
+        Game = new Game(boardSize);
+        Board = Game.Board;
     }
 
-    private void ClearBoard()
+    private GameStatus GetStatus()
     {
-        _status = Status.NotStarted;
+        return Game?.Status ?? GameStatus.NotStarted;
     }
 
-    private void ClickTile(Tile tile)
+    private void HandleLeftClick(Tile tile)
     {
-        if (tile.IsFlagged)
-        {
-            tile.UnFlag();
-            return;
-        }
-        
-        tile.Click();
-        if (tile.IsMine)
-        {
-            _status = Status.Lost;
-            _board.ClickAllTiles();
-            return;
-        }
-        
-        if (tile.NumNeighbours == 0)
-        {
-            _board.RevealAdjacentTiles(tile);
-        }
-        
-        if (_board.OnlyMinesRemaining())
-        {
-            _status = Status.Won;
-            _board.ClickAllTiles();
-        } 
+        Game.LeftClickTile(tile);
     }
 
-    private void ToggleFlag(MouseEventArgs e, Tile tile)
+    private void HandleRightClick(MouseEventArgs e, Tile tile)
     {
-        if (e.Button != 2)
+        if (e.Button == 2)
         {
-            // Not a right click
-            return;
-        }
-        
-        if (tile.IsFlagged)
-        {
-            tile.UnFlag();
-        }
-        else
-        {
-            tile.Flag();
+            // Right mouse button was clicked.
+            Game.RightClickTile(tile);
         }
     }
+
+    private string ParseNumMines(Tile tile)
+    {
+        var neighbouringMines = Board.CountNeighbouringMines(tile);
+        return neighbouringMines == 0 ? "" : neighbouringMines.ToString();
+    }
+
 }

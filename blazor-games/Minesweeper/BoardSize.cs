@@ -1,6 +1,6 @@
 ﻿namespace blazor_games.Minesweeper
 {
-    public enum Size
+    public enum BoardSize
     {
         Small,
         Medium,

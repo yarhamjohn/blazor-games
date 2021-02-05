@@ -1,38 +1,65 @@
 using System;
-using System.Runtime.InteropServices;
 
-public class Tile
+public abstract class Tile
+{
+    private TileStatus Status { get; set; }
+
+    protected Tile()
     {
-        public bool IsMine { get; set; }
-        public bool IsClicked { get; set; }
-        public int NumNeighbours { get; set; }
-        public bool IsFlagged { get; set; }
-        
-        public int Row { get; set; }
-        public int Col { get; set; }
+        Status = TileStatus.Untouched;
+    }
 
-        public Tile(int row, int col)
+    public abstract bool IsMine();
+
+    public void Click()
+    {
+        if (Status == TileStatus.Flagged)
         {
-            Row = row;
-            Col = col;
-            IsMine = false;
-            IsClicked = false;
-            NumNeighbours = 0;
+            UnFlag();
         }
-
-        public void Click()
+        else
         {
-            IsClicked = true;
-            IsFlagged = false;
-        }
-
-        public void Flag()
-        {
-            IsFlagged = true;
-        }
-
-        public void UnFlag()
-        {
-            IsFlagged = false;
+            Reveal();
         }
     }
+
+    public void Flag()
+    {
+        if (Status == TileStatus.Revealed)
+        {
+            throw new InvalidOperationException("Cannot flag a clicked tile.");
+        }
+
+        Status = TileStatus.Flagged;
+    }
+
+    public void UnFlag()
+    {
+        if (Status == TileStatus.Revealed)
+        {
+            throw new InvalidOperationException("Cannot un-flag a clicked tile.");
+        }
+
+        Status = TileStatus.Untouched;
+    }
+
+    public void Reveal()
+    {
+        Status = TileStatus.Revealed;
+    }
+    
+    public TileStatus GetStatus()
+    {
+        return Status;
+    }
+}
+
+public class MineTile : Tile
+{
+    public override bool IsMine() => true;
+}
+
+public class EmptyTile : Tile
+{
+    public override bool IsMine() => false;
+}
