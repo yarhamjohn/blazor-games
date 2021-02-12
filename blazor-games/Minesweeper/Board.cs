@@ -93,12 +93,6 @@ public class Board
     private void RevealAdjacentTiles(Tile tile)
     {
         var (row, col) = GetTilePosition(tile);
-        if (tile.IsMine())
-        {
-            // Don't reveal the tile if its a mine
-            return;
-        }
-
         tile.Reveal();
         if (CountNeighbouringMines(row, col) > 0)
         {

@@ -17,13 +17,13 @@ namespace blazor_games.tests.Minesweeper
              * Board shape:
              *      x x * x
              *      * x x x
-             *      x x x x
+             *      * x x x
              */
             Tiles = new Tile[,]
             {
                 {new EmptyTile(), new EmptyTile(), new MineTile(), new EmptyTile()},
                 {new MineTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()},
-                {new EmptyTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()}
+                {new MineTile(), new EmptyTile(), new EmptyTile(), new EmptyTile()}
             };
         }
 
