@@ -1,0 +1,40 @@
+name: gh-pages
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Check the main branch
+    - uses: actions/checkout@v2
+    
+    # Setup .NET Core 5
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.103
+      
+    # Publish the .NET Core project
+    - name: Publish .NET Core project
+      run: dotnet publish blazor-games/blazor-games.csproj --configuration Release --output release --nologo
+    
+    # changes the base-tag in index.html from '/' to 'blazor-games' to match GitHub Pages repository subdirectory
+    - name: Change base-tag in index.html from / to blazor-games
+      run: sed -i 's/<base href="\/" \/>/<base href="\/blazor-games\/" \/>/g' release/wwwroot/index.html
+
+    # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. (Allow files and folders starting with an underscore)
+    - name: Add .nojekyll file
+      run: touch release/wwwroot/.nojekyll
+      
+    # Deploy to Github pages
+    - name: Deploy to Github Pages
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        BRANCH: gh-pages # The branch the action should deploy to.
+        FOLDER: release/wwwroot # The folder the action should deploy.
+        SINGLE_COMMIT: true
