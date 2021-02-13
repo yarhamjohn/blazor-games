@@ -1,4 +1,5 @@
 using System;
+using blazor_games.Minesweeper;
 using FluentAssertions;
 using NUnit.Framework;
 

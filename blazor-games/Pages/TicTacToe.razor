@@ -1,0 +1,85 @@
+﻿@page "/tictactoe"
+@using blazor_games.TicTacToe
+
+<h1>TicTacToe</h1>
+
+<div style="padding-bottom: 1rem">
+    <button class="btn btn-primary" @onclick="Start">New game</button>
+</div>
+
+@if (GetStatus() != GameStatus.NotStarted)
+{
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        @for (var row = 0; row < Board.GetLength(0); row++)
+        {
+            <div class="btn-group">
+                @for (var col = 0; col < Board.GetLength(1); col++)
+                {
+                    var tile = Board[row, col];
+                    if (tile.GetCounter() == Counter.None)
+                    {
+                        <button class="btn btn-default tile" @onclick="() => PlaceCounter(tile)"></button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-default tile tile-clicked" @onclick="() => PlaceCounter(tile)">@ParseCounter(tile)</button>
+                    }
+
+                    if (col != Board.GetLength(1) - 1)
+                    {
+                        <div style="border:1px solid black"></div>
+                    }
+                }
+            </div>
+
+            if (row != Board.GetLength(0) - 1)
+            {
+                <div style="border:1px solid black; width: 184px"></div>
+            }
+        }
+    </div>
+
+    var winner = Game.GetWinner();
+    if (winner != Counter.None)
+    {
+        <div>The winner is @winner</div>
+    }
+    else
+    {
+        <div>Next player: @Game.Counter</div>
+    }
+}
+
+
+@code {
+    private Game Game { get; set; }
+    private Tile[,] Board { get; set; }
+
+    private void Start()
+    {
+        Game = new Game();
+        Board = Game.Board;
+    }
+
+    private GameStatus GetStatus()
+    {
+        return Game?.Status ?? GameStatus.NotStarted;
+    }
+
+    private void PlaceCounter(Tile tile)
+    {
+        if (tile.GetCounter() == Counter.None)
+        {
+            Game.PlaceCounter(tile);
+        }
+    }
+
+    private string ParseCounter(Tile tile)
+    {
+        if (tile.GetCounter() == Counter.None)
+        {
+            return " ";
+        }
+        return tile.GetCounter() == Counter.Circle ? "O" : "X";
+    }
+}

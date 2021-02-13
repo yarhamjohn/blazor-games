@@ -1,6 +1,9 @@
-﻿public enum TileStatus
+﻿namespace blazor_games.Minesweeper
 {
-    Untouched,
-    Revealed,
-    Flagged
+    public enum TileStatus
+    {
+        Untouched,
+        Revealed,
+        Flagged
+    }
 }

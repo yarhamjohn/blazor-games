@@ -1,0 +1,9 @@
+﻿.tile {
+    width: 60px;
+    height: 60px;
+    padding: 0;
+}
+
+.tile-clicked {
+    cursor: default;
+}
